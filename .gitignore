@@ -10,6 +10,7 @@ dist-ssr/
 build/
 .vercel
 .netlify
+.vite/
 
 # Logs
 logs/
