@@ -1,24 +1,68 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import HeroIllustration from '../components/ui/HeroIllustration';
 import {
     EyeInvisibleOutlined,
     EyeOutlined,
     LoadingOutlined
 } from '@ant-design/icons';
+import { message } from 'antd';
 import logo from '../assets/logo.jpg';
+import { login } from '../services/authService';
 
 export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
+
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+
+        try {
+            const data = await login(email, password);
+
+            // Verify Admin Role
+            const role = data.roles;
+            // Handle both single role (string) and multiple roles (array)
+            const isAdmin = Array.isArray(role)
+                ? role.includes('Admin')
+                : role === 'Admin';
+
+            if (!isAdmin) {
+                message.error('Truy cập bị từ chối: Tài khoản này không có quyền Quản trị viên.');
+                setIsLoading(false);
+                return;
+            }
+
+            // Store auth data
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+            localStorage.setItem('user', JSON.stringify({
+                userId: data.userId,
+                email: data.email,
+                fullName: data.fullName,
+                avatarUrl: data.avatarUrl,
+                roles: data.roles
+            }));
+
+            message.success('Đang chuyển hướng...');
+            // Navigate to dashboard or home
+            navigate('/');
+        } catch (error) {
+            console.error('Login error:', error);
+            if (error.response && error.response.data) {
+                // Try to show specific message from backend if available, otherwise generic
+                message.error(error.response.data.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+            } else {
+                message.error('Không thể kết nối đến máy chủ.');
+            }
+        } finally {
             setIsLoading(false);
-        }, 2000);
+        }
     };
 
     return (
@@ -66,6 +110,7 @@ export default function LoginPage() {
                                 </label>
                                 <input
                                     id="email"
+                                    name="email"
                                     type="email"
                                     placeholder="name@example.com"
                                     className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all disabled:cursor-not-allowed disabled:opacity-50"
@@ -88,6 +133,7 @@ export default function LoginPage() {
                                 <div className="relative">
                                     <input
                                         id="password"
+                                        name="password"
                                         type={showPassword ? "text" : "password"}
                                         className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all disabled:cursor-not-allowed disabled:opacity-50 pr-10"
                                         placeholder="Nhập mật khẩu của bạn"

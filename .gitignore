@@ -32,6 +32,7 @@ lerna-debug.log*
 .env.bak
 .env.old
 *.env
+!.env.example
 
 # Testing
 coverage/
