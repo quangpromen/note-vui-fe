@@ -6,14 +6,17 @@ import {
     Unlock,
     Crown,
     User as UserIcon,
-    AlertTriangle
+    AlertTriangle,
+    Eye
 } from 'lucide-react';
 import { toggleUserLock } from '../../services/adminService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import UserVipModal from './UserVipModal';
+import UserDetailModal from './UserDetailModal';
+import UserEditModal from './UserEditModal';
 
 /**
- * UserTable - Bảng quản lý người dùng với Search, Pagination, Lock/Unlock và VIP Management
+ * UserTable - Bảng quản lý người dùng với Search, Pagination, Lock/Unlock, VIP, Detail & Edit
  */
 const UserTable = ({
     users = [],
@@ -29,6 +32,14 @@ const UserTable = ({
     // VIP Modal state
     const [vipModalOpen, setVipModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
+
+    // Detail Modal state
+    const [detailModalOpen, setDetailModalOpen] = useState(false);
+    const [detailUser, setDetailUser] = useState(null);
+
+    // Edit Modal state
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editUser, setEditUser] = useState(null);
 
     const handleSearch = () => {
         onSearch?.(searchValue);
@@ -47,7 +58,6 @@ const UserTable = ({
         mutationFn: ({ id, isLocking }) => toggleUserLock(id, isLocking),
         onSuccess: (result, variables) => {
             message.success(result.message || `Đã ${variables.isLocking ? 'khóa' : 'mở khóa'} tài khoản thành công`);
-            // Tự động làm mới bảng bằng cách xóa cache 'users'
             queryClient.invalidateQueries(['users']);
             onRefresh?.();
         },
@@ -87,6 +97,7 @@ const UserTable = ({
         });
     };
 
+    // VIP Modal handlers
     const handleOpenVipModal = (user) => {
         setSelectedUser(user);
         setVipModalOpen(true);
@@ -95,7 +106,32 @@ const UserTable = ({
     const handleCloseVipModal = () => {
         setVipModalOpen(false);
         setSelectedUser(null);
-        // Refresh table after closing modal to get updated data
+        onRefresh?.();
+    };
+
+    // Detail Modal handlers
+    const handleOpenDetail = (user) => {
+        setDetailUser(user);
+        setDetailModalOpen(true);
+    };
+
+    const handleCloseDetail = () => {
+        setDetailModalOpen(false);
+        setDetailUser(null);
+    };
+
+    // Edit Modal handlers - triggered from Detail Modal's "Chỉnh sửa" button
+    const handleOpenEdit = (userData) => {
+        setEditUser(userData);
+        setDetailModalOpen(false); // Close detail modal first
+        setTimeout(() => {
+            setEditModalOpen(true);
+        }, 200); // Brief delay so transitions don't overlap
+    };
+
+    const handleCloseEdit = () => {
+        setEditModalOpen(false);
+        setEditUser(null);
         onRefresh?.();
     };
 
@@ -105,12 +141,22 @@ const UserTable = ({
             dataIndex: 'fullName',
             key: 'fullName',
             render: (text, record) => (
-                <div className="flex items-center gap-3">
+                <div
+                    className="flex items-center gap-3 cursor-pointer group"
+                    onClick={() => handleOpenDetail(record)}
+                >
                     <div className="relative">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white font-bold shadow-md">
-                            {text ? text.charAt(0).toUpperCase() : record.email?.charAt(0).toUpperCase()}
-                        </div>
-                        {/* Premium badge indicator */}
+                        {record.avatarUrl ? (
+                            <img
+                                src={record.avatarUrl}
+                                alt={text || record.email}
+                                className="w-10 h-10 rounded-full object-cover shadow-md group-hover:shadow-lg transition-shadow border-2 border-white bg-slate-100"
+                            />
+                        ) : (
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white font-bold shadow-md group-hover:shadow-lg transition-shadow">
+                                {text ? text.charAt(0).toUpperCase() : record.email?.charAt(0).toUpperCase()}
+                            </div>
+                        )}
                         {record.planName?.toLowerCase().includes('premium') && (
                             <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg ring-2 ring-white">
                                 <Crown className="w-3 h-3 text-white" />
@@ -118,7 +164,9 @@ const UserTable = ({
                         )}
                     </div>
                     <div>
-                        <p className="font-medium text-slate-800">{text || 'Chưa đặt tên'}</p>
+                        <p className="font-medium text-slate-800 group-hover:text-teal-600 transition-colors">
+                            {text || 'Chưa đặt tên'}
+                        </p>
                         <p className="text-xs text-slate-500">{record.email}</p>
                     </div>
                 </div>
@@ -181,9 +229,19 @@ const UserTable = ({
         {
             title: 'Hành động',
             key: 'action',
-            width: 180,
+            width: 230,
             render: (_, record) => (
                 <div className="flex items-center gap-2">
+                    {/* Detail Button */}
+                    <Tooltip title="Xem chi tiết">
+                        <button
+                            onClick={() => handleOpenDetail(record)}
+                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600 text-white hover:from-teal-600 hover:to-cyan-700 shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 transition-all hover:scale-105 active:scale-95"
+                        >
+                            <Eye className="w-4 h-4" />
+                        </button>
+                    </Tooltip>
+
                     {/* VIP Management Button */}
                     <Tooltip title="Quản lý VIP">
                         <button
@@ -265,6 +323,21 @@ const UserTable = ({
                 isOpen={vipModalOpen}
                 onClose={handleCloseVipModal}
                 user={selectedUser}
+            />
+
+            {/* User Detail Modal */}
+            <UserDetailModal
+                isOpen={detailModalOpen}
+                onClose={handleCloseDetail}
+                user={detailUser}
+                onEdit={handleOpenEdit}
+            />
+
+            {/* User Edit Modal */}
+            <UserEditModal
+                isOpen={editModalOpen}
+                onClose={handleCloseEdit}
+                user={editUser}
             />
         </>
     );

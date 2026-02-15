@@ -123,9 +123,9 @@ const UserVipModal = ({ isOpen, onClose, user }) => {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all">
+                            <Dialog.Panel className="w-full max-w-md transform rounded-2xl bg-white shadow-2xl transition-all overflow-visible">
                                 {/* Header with gradient */}
-                                <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 px-6 py-5">
+                                <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 px-6 py-5 rounded-t-2xl">
                                     <button
                                         onClick={onClose}
                                         className="absolute top-4 right-4 p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
@@ -202,9 +202,26 @@ const UserVipModal = ({ isOpen, onClose, user }) => {
                                                 <label className="block text-sm font-medium text-slate-700 mb-2">
                                                     Chọn gói mới
                                                 </label>
-                                                <Listbox value={selectedPlan} onChange={setSelectedPlan}>
+                                                <Listbox value={selectedPlan} onChange={(plan) => {
+                                                    setSelectedPlan(plan);
+                                                    if (plan.id === 1) { // Monthly
+                                                        const d = new Date();
+                                                        d.setMonth(d.getMonth() + 1);
+                                                        const year = d.getFullYear();
+                                                        const month = String(d.getMonth() + 1).padStart(2, '0');
+                                                        const day = String(d.getDate()).padStart(2, '0');
+                                                        setEndDate(`${year}-${month}-${day}`);
+                                                    } else if (plan.id === 2) { // Yearly
+                                                        const d = new Date();
+                                                        d.setFullYear(d.getFullYear() + 1);
+                                                        const year = d.getFullYear();
+                                                        const month = String(d.getMonth() + 1).padStart(2, '0');
+                                                        const day = String(d.getDate()).padStart(2, '0');
+                                                        setEndDate(`${year}-${month}-${day}`);
+                                                    }
+                                                }}>
                                                     <div className="relative">
-                                                        <Listbox.Button className="relative w-full cursor-pointer rounded-xl bg-white py-3 pl-4 pr-10 text-left border-2 border-slate-200 hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-colors">
+                                                        <Listbox.Button className="relative w-full cursor-pointer rounded-xl bg-white py-3 pl-4 pr-10 text-left border-2 border-slate-200 hover:border-indigo-300 focus:border-indigo-500 focus:outline-none transition-colors shadow-sm">
                                                             <span className="flex items-center gap-3">
                                                                 <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${selectedPlan.color}`}>
                                                                     {selectedPlan.id === 0 ? 'FREE' : 'VIP'}
@@ -219,11 +236,14 @@ const UserVipModal = ({ isOpen, onClose, user }) => {
                                                         </Listbox.Button>
                                                         <Transition
                                                             as={Fragment}
-                                                            leave="transition ease-in duration-100"
-                                                            leaveFrom="opacity-100"
-                                                            leaveTo="opacity-0"
+                                                            enter="transition ease-out duration-200"
+                                                            enterFrom="transform opacity-0 scale-95 -translate-y-2"
+                                                            enterTo="transform opacity-100 scale-100 translate-y-0"
+                                                            leave="transition ease-in duration-150"
+                                                            leaveFrom="transform opacity-100 scale-100 translate-y-0"
+                                                            leaveTo="transform opacity-0 scale-95 -translate-y-2"
                                                         >
-                                                            <Listbox.Options className="absolute z-10 mt-2 max-h-60 w-full overflow-auto rounded-xl bg-white py-2 shadow-xl ring-1 ring-black/5 focus:outline-none">
+                                                            <Listbox.Options className="absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded-xl bg-white py-2 shadow-xl ring-1 ring-black/5 focus:outline-none origin-top">
                                                                 {PLAN_TYPES.map((plan) => (
                                                                     <Listbox.Option
                                                                         key={plan.id}
@@ -260,7 +280,7 @@ const UserVipModal = ({ isOpen, onClose, user }) => {
 
                                             {/* End Date Picker - Only show for Premium plans */}
                                             {selectedPlan.id !== 0 && (
-                                                <div>
+                                                <div className="animate-fade-in">
                                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                                         Ngày hết hạn
                                                         <span className="text-slate-400 font-normal ml-1">(để trống để server tự tính)</span>
@@ -285,7 +305,7 @@ const UserVipModal = ({ isOpen, onClose, user }) => {
 
                                             {/* Auto Renew Toggle */}
                                             {selectedPlan.id !== 0 && (
-                                                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
+                                                <div className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 animate-fade-in">
                                                     <div className="flex items-center gap-3">
                                                         <Sparkles className="w-5 h-5 text-indigo-500" />
                                                         <div>

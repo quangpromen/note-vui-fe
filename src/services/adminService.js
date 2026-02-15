@@ -63,10 +63,36 @@ export const updateUserSubscription = async (userId, data) => {
     return response.data;
 };
 
+/**
+ * Lấy chi tiết người dùng (thông tin cá nhân, subscription, notes stats, AI usage)
+ * @param {string} userId - ID của người dùng (guid)
+ * @returns {Promise<Object>} Chi tiết đầy đủ của user
+ */
+export const getUserDetail = async (userId) => {
+    const response = await api.get(`/admin/users/${userId}/detail`);
+    return response.data;
+};
+
+/**
+ * Admin sửa thông tin người dùng (fullName, email, avatarUrl)
+ * @param {string} userId - ID của người dùng (guid)
+ * @param {Object} data - Thông tin cần cập nhật
+ * @param {string} data.fullName - Tên đầy đủ (required, max 100 ký tự)
+ * @param {string} data.email - Email (required, đúng định dạng)
+ * @param {string|null} [data.avatarUrl] - URL avatar (optional)
+ * @returns {Promise<{success: boolean, message: string, data: Object}>}
+ */
+export const updateUserProfile = async (userId, data) => {
+    const response = await api.put(`/admin/users/${userId}/profile`, data);
+    return response.data;
+};
+
 export default {
     getStats,
     getUsers,
     toggleUserLock,
     getUserSubscription,
-    updateUserSubscription
+    updateUserSubscription,
+    getUserDetail,
+    updateUserProfile
 };
