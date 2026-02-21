@@ -12,6 +12,7 @@ import AdminLayout from '../layout/AdminLayout';
 import StatCard from '../components/admin/StatCard';
 import RevenueChart from '../components/admin/RevenueChart';
 import UserStatsChart from '../components/admin/UserStatsChart';
+import AiUsageChart from '../components/admin/AiUsageChart';
 import { getStats } from '../services/adminService';
 
 const DashboardPage = () => {
@@ -140,16 +141,19 @@ const DashboardPage = () => {
                 />
             </div>
 
-            {/* Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                {/* Revenue Chart - Full width on mobile, half on large screens */}
-                <RevenueChart totalRevenue={stats?.totalRevenue || 0} />
+            {/* Charts Section */}
+            <div className="space-y-6 mb-6">
+                {/* Row 1: Revenue + User Stats */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <RevenueChart totalRevenue={stats?.totalRevenue || 0} />
+                    <UserStatsChart
+                        totalUsers={stats?.totalUsers || 0}
+                        activePremiumUsers={stats?.activePremiumUsers || 0}
+                    />
+                </div>
 
-                {/* User Stats Pie Chart */}
-                <UserStatsChart
-                    totalUsers={stats?.totalUsers || 0}
-                    activePremiumUsers={stats?.activePremiumUsers || 0}
-                />
+                {/* Row 2: AI Usage — full width for detailed bar chart */}
+                <AiUsageChart totalAiRequests={stats?.totalAiRequests || 0} />
             </div>
 
 

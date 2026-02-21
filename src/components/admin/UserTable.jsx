@@ -7,13 +7,15 @@ import {
     Crown,
     User as UserIcon,
     AlertTriangle,
-    Eye
+    Eye,
+    UserPlus
 } from 'lucide-react';
 import { toggleUserLock } from '../../services/adminService';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import UserVipModal from './UserVipModal';
 import UserDetailModal from './UserDetailModal';
 import UserEditModal from './UserEditModal';
+import UserCreateModal from './UserCreateModal';
 
 /**
  * UserTable - Bảng quản lý người dùng với Search, Pagination, Lock/Unlock, VIP, Detail & Edit
@@ -40,6 +42,9 @@ const UserTable = ({
     // Edit Modal state
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editUser, setEditUser] = useState(null);
+
+    // Create Modal state
+    const [createModalOpen, setCreateModalOpen] = useState(false);
 
     const handleSearch = () => {
         onSearch?.(searchValue);
@@ -296,6 +301,14 @@ const UserTable = ({
                             <Button type="primary" onClick={handleSearch}>
                                 Tìm kiếm
                             </Button>
+                            <Button
+                                type="primary"
+                                className="bg-teal-600 hover:bg-teal-700 border-teal-600 shadow-teal-600/30 flex items-center justify-center gap-2"
+                                onClick={() => setCreateModalOpen(true)}
+                            >
+                                <UserPlus className="w-4 h-4" />
+                                Tạo mới
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -338,6 +351,12 @@ const UserTable = ({
                 isOpen={editModalOpen}
                 onClose={handleCloseEdit}
                 user={editUser}
+            />
+
+            {/* User Create Modal */}
+            <UserCreateModal
+                isOpen={createModalOpen}
+                onClose={() => setCreateModalOpen(false)}
             />
         </>
     );

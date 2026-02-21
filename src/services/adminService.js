@@ -87,6 +87,20 @@ export const updateUserProfile = async (userId, data) => {
     return response.data;
 };
 
+/**
+ * Admin tạo mới (hoặc lấy) người dùng
+ * @param {Object} data 
+ * @param {string} data.email
+ * @param {string} data.password
+ * @param {string} data.fullName
+ * @param {string} [data.avatarUrl]
+ * @returns {Promise<{success: boolean, message: string, data: Object}>}
+ */
+export const createUser = async (data) => {
+    const response = await api.post('/admin/users', data);
+    return response.data;
+};
+
 export default {
     getStats,
     getUsers,
@@ -94,5 +108,6 @@ export default {
     getUserSubscription,
     updateUserSubscription,
     getUserDetail,
-    updateUserProfile
+    updateUserProfile,
+    createUser
 };
