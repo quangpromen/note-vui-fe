@@ -101,6 +101,41 @@ export const createUser = async (data) => {
     return response.data;
 };
 
+/**
+ * Lấy danh sách yêu cầu nâng cấp VIP
+ * @param {Object} params
+ * @param {number} [params.page=1]
+ * @param {number} [params.pageSize=10]
+ * @param {number} [params.status] (0=Pending, 1=Approved, 2=Rejected, 3=Cancelled)
+ * @param {string} [params.search]
+ */
+export const getSubscriptionRequests = async ({ page = 1, pageSize = 10, status, search } = {}) => {
+    const params = { page, pageSize };
+    if (status !== undefined && status !== null && status !== '') params.status = status;
+    if (search) params.search = search;
+    const response = await api.get('/admin/subscription-requests', { params });
+    return response.data;
+};
+
+/**
+ * Phê duyệt yêu cầu nâng cấp VIP
+ * @param {number|string} id
+ */
+export const approveSubscriptionRequest = async (id) => {
+    const response = await api.post(`/admin/subscription-requests/${id}/approve`);
+    return response.data;
+};
+
+/**
+ * Từ chối yêu cầu nâng cấp VIP
+ * @param {number|string} id
+ * @param {string} reason
+ */
+export const rejectSubscriptionRequest = async (id, reason) => {
+    const response = await api.post(`/admin/subscription-requests/${id}/reject`, { reason });
+    return response.data;
+};
+
 export default {
     getStats,
     getUsers,
@@ -109,5 +144,8 @@ export default {
     updateUserSubscription,
     getUserDetail,
     updateUserProfile,
-    createUser
+    createUser,
+    getSubscriptionRequests,
+    approveSubscriptionRequest,
+    rejectSubscriptionRequest
 };
