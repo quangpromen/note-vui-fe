@@ -7,7 +7,8 @@ import {
     Menu,
     X,
     ChevronRight,
-    Sparkles
+    Sparkles,
+    CreditCard
 } from 'lucide-react';
 import { message } from 'antd';
 import { logout } from '../services/authService';
@@ -15,6 +16,7 @@ import { logout } from '../services/authService';
 const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/users', icon: Users, label: 'Quản lý người dùng' },
+    { path: '/subscription-requests', icon: CreditCard, label: 'Yêu cầu nâng cấp VIP' },
 ];
 
 const AdminLayout = ({ children }) => {
